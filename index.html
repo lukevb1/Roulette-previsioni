@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Previsione Roulette</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { margin-top: 40px; }
+        input, select, button { margin: 5px; padding: 5px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #999; padding: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Previsione Roulette</h1>
+
+    <label for="croupier">Nome Croupier:</label>
+    <input type="text" id="croupier">
+    <button onclick="cambiaCroupier()">Cambia Croupier</button>
+
+    <h2>Inserisci Dati</h2>
+    <label for="partenza">Numero di Partenza (A):</label>
+    <input type="number" id="partenza">
+    <label for="arrivo">Numero di Arrivo (B):</label>
+    <input type="number" id="arrivo">
+    <label for="senso">Senso (O/A):</label>
+    <select id="senso">
+        <option value="O">Orario</option>
+        <option value="A">Antiorario</option>
+    </select>
+    <button onclick="aggiungiDati()">Aggiungi</button>
+
+    <h2>Previsione Settore</h2>
+    <div id="previsioneSettore"></div>
+
+    <h2>Previsioni Numeriche</h2>
+    <div id="previsioneNumeri"></div>
+
+    <h2>Storico</h2>
+    <table id="storico">
+        <thead>
+            <tr>
+                <th>Croupier</th>
+                <th>Partenza</th>
+                <th>Arrivo</th>
+                <th>Senso</th>
+                <th>Settore</th>
+                <th>Esito</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        let storico = {};
+
+        function settore(numero) {
+            if (numero >= 0 && numero <= 12) return 'A';
+            if (numero >= 13 && numero <= 24) return 'B';
+            return 'C';
+        }
+
+        function cambiaCroupier() {
+            const tbody = document.getElementById("storico").getElementsByTagName("tbody")[0];
+            tbody.innerHTML = "";
+        }
+
+        function aggiungiDati() {
+            const croupier = document.getElementById("croupier").value.trim();
+            const A = parseInt(document.getElementById("partenza").value);
+            const B = parseInt(document.getElementById("arrivo").value);
+            const C = document.getElementById("senso").value;
+
+            if (!storico[croupier]) storico[croupier] = [];
+
+            const settA = settore(A);
+            const settB = settore(B);
+
+            const esito = settA === settB ? "Vittoria" : "Sconfitta";
+            const previsione = `Settore previsto: ${settB}`;
+            const previsioneNum = Array.from({length: 9}, (_, i) => (B - 4 + i + 37) % 37).join(", ");
+
+            document.getElementById("previsioneSettore").innerText = previsione;
+            document.getElementById("previsioneNumeri").innerText = "Numeri previsti: " + previsioneNum;
+
+            storico[croupier].push({ A, B, C, settore: settB, esito });
+
+            const row = `<tr><td>${croupier}</td><td>${A}</td><td>${B}</td><td>${C}</td><td>${settB}</td><td>${esito}</td></tr>`;
+            document.getElementById("storico").getElementsByTagName("tbody")[0].innerHTML += row;
+        }
+    </script>
+</body>
+</html>
